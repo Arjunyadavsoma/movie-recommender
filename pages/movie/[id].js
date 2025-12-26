@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
-import { getMovieDetails, getImageUrl, getBackdropUrl } from '../../lib/tmdb';
+import { getMovieDetails, getImageUrl, getBackdropUrl, getSimilarMovies } from '../../lib/tmdb';
 import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../../lib/watchlist';
 import Head from 'next/head';
 
@@ -8,7 +8,9 @@ export default function MovieDetail({ user }) {
   const router = useRouter();
   const { id } = router.query;
   const [movie, setMovie] = useState(null);
+  const [similarMovies, setSimilarMovies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingSimilar, setLoadingSimilar] = useState(true);
   const [inWatchlist, setInWatchlist] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
   const [checkingWatchlist, setCheckingWatchlist] = useState(true);
@@ -18,9 +20,11 @@ export default function MovieDetail({ user }) {
   useEffect(() => {
     if (id && user) {
       loadMovieDetails();
+      loadSimilarMovies();
       checkWatchlistStatus();
     } else if (id && !user) {
       loadMovieDetails();
+      loadSimilarMovies();
       setCheckingWatchlist(false);
     }
   }, [id, user]);
@@ -30,6 +34,13 @@ export default function MovieDetail({ user }) {
     const details = await getMovieDetails(id);
     setMovie(details);
     setLoading(false);
+  };
+
+  const loadSimilarMovies = async () => {
+    setLoadingSimilar(true);
+    const similar = await getSimilarMovies(id, 6);
+    setSimilarMovies(similar);
+    setLoadingSimilar(false);
   };
   
   const checkWatchlistStatus = async () => {
@@ -41,7 +52,6 @@ export default function MovieDetail({ user }) {
     setCheckingWatchlist(true);
     try {
       const exists = await isInWatchlist(user.uid, id);
-      console.log('Watchlist check result:', exists);
       setInWatchlist(exists);
     } catch (error) {
       console.error('Error checking watchlist:', error);
@@ -57,20 +67,14 @@ export default function MovieDetail({ user }) {
     }
     
     const previousState = inWatchlist;
-    
-    // Optimistic update
     setInWatchlist(!inWatchlist);
     setWatchlistLoading(true);
     
     try {
       if (previousState) {
-        // Remove from watchlist
         const result = await removeFromWatchlist(user.uid, movie.id);
-        if (!result.success) {
-          throw new Error('Failed to remove from watchlist');
-        }
+        if (!result.success) throw new Error('Failed to remove from watchlist');
       } else {
-        // Add to watchlist
         const result = await addToWatchlist(user.uid, {
           id: movie.id,
           title: movie.title,
@@ -78,18 +82,10 @@ export default function MovieDetail({ user }) {
           rating: movie.vote_average?.toFixed(1),
           year: movie.release_date?.split('-')[0]
         });
-        
-        if (!result.success) {
-          throw new Error('Failed to add to watchlist');
-        }
-        
-        if (result.alreadyExists) {
-          console.log('Movie already in watchlist');
-        }
+        if (!result.success) throw new Error('Failed to add to watchlist');
       }
     } catch (error) {
       console.error('Watchlist error:', error);
-      // Revert on error
       setInWatchlist(previousState);
       alert('Failed to update watchlist. Please try again.');
     } finally {
@@ -145,7 +141,7 @@ export default function MovieDetail({ user }) {
       </Head>
 
       <div className="min-h-screen">
-        {/* Hero Section with Backdrop */}
+        {/* Hero Section - SAME AS BEFORE */}
         <div className="relative">
           <div 
             className="h-[70vh] bg-cover bg-center relative"
@@ -201,12 +197,11 @@ export default function MovieDetail({ user }) {
                       )}
                     </div>
 
-                    {/* Action Buttons */}
                     <div className="flex flex-wrap gap-3">
                       {trailerKey && (
                         <button
                           onClick={() => setShowTrailer(true)}
-                          className="px-6 py-3 bg-white hover:bg-gray-200 text-dark-bg font-bold rounded-lg transition-all duration-200 flex items-center space-x-2 group"
+                          className="px-6 py-3 bg-white hover:bg-gray-200 text-dark-bg font-bold rounded-lg transition-all duration-200 flex items-center space-x-2"
                         >
                           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
@@ -260,7 +255,7 @@ export default function MovieDetail({ user }) {
           </div>
         </div>
 
-        {/* Trailer Modal */}
+        {/* Trailer Modal - SAME AS BEFORE */}
         {showTrailer && trailerKey && (
           <div 
             className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
@@ -291,6 +286,7 @@ export default function MovieDetail({ user }) {
 
         {/* Content Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Tabs */}
           <div className="flex gap-6 mb-8 border-b border-gray-800">
             {['overview', 'cast', 'details'].map((tab) => (
               <button
@@ -307,6 +303,7 @@ export default function MovieDetail({ user }) {
             ))}
           </div>
 
+          {/* Tab Content */}
           {activeTab === 'overview' && (
             <div className="space-y-8">
               <div>
@@ -432,16 +429,88 @@ export default function MovieDetail({ user }) {
             </div>
           )}
         </div>
+
+        {/* 🆕 SIMILAR MOVIES SECTION - NEW! */}
+        {similarMovies.length > 0 && (
+          <div className="bg-card-bg py-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl md:text-3xl font-bold text-white">
+                  More Like This
+                </h3>
+                <span className="text-gray-400 text-sm">{similarMovies.length} similar movies</span>
+              </div>
+
+              {loadingSimilar ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {[...Array(6)].map((_, idx) => (
+                    <div key={idx} className="shimmer rounded-lg h-80"></div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+                  {similarMovies.map((similarMovie) => (
+                    <SimilarMovieCard 
+                      key={similarMovie.id}
+                      movie={similarMovie}
+                      onNavigate={() => router.push(`/movie/${similarMovie.id}`)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
 }
 
+// Helper Component for Detail Rows
 function DetailRow({ label, value }) {
   return (
     <div className="flex justify-between items-center py-3 border-b border-gray-800">
       <span className="text-gray-400 font-semibold">{label}</span>
       <span className="text-white">{value}</span>
+    </div>
+  );
+}
+
+// 🆕 NEW: Similar Movie Card Component
+function SimilarMovieCard({ movie, onNavigate }) {
+  return (
+    <div 
+      onClick={onNavigate}
+      className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
+    >
+      <div className="relative rounded-lg overflow-hidden shadow-lg">
+        <img 
+          src={getImageUrl(movie.poster_path)}
+          alt={movie.title}
+          className="w-full h-auto object-cover"
+          loading="lazy"
+        />
+        
+        {/* Rating Badge */}
+        <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-bold text-yellow-400">
+          ⭐ {movie.vote_average?.toFixed(1)}
+        </div>
+        
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+          <h4 className="font-bold text-sm mb-1 line-clamp-2 text-white">{movie.title}</h4>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-yellow-400">⭐ {movie.vote_average?.toFixed(1)}</span>
+            <span className="text-gray-300">{movie.release_date?.split('-')[0]}</span>
+          </div>
+          <p className="text-xs text-gray-300 line-clamp-2 mt-2">{movie.overview}</p>
+        </div>
+      </div>
+      
+      {/* Title below poster (visible on mobile) */}
+      <div className="mt-2 lg:hidden">
+        <h4 className="text-white font-semibold text-sm line-clamp-2">{movie.title}</h4>
+      </div>
     </div>
   );
 }
