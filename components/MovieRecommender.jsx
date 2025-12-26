@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { searchMovie, getImageUrl, getTrendingMovies } from '../lib/tmdb';
 import { useRouter } from 'next/router';
 import FilterBar from './FilterBar';
+import { isInWatchlist, addToWatchlist, removeFromWatchlist } from '../lib/watchlist';
 
 export default function MovieRecommender({ user }) {
   const router = useRouter();
@@ -134,34 +135,95 @@ export default function MovieRecommender({ user }) {
     }
   };
   
-  const MovieCard = ({ movie, onClick }) => (
-    <div 
-      onClick={() => onClick && onClick(movie)}
-      className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
-    >
-      <div className="relative rounded-lg overflow-hidden shadow-lg">
-        <img 
-          src={movie.poster || getImageUrl(movie.poster_path)}
-          alt={movie.title}
-          className="w-full h-auto object-cover"
-        />
-        
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-          <h3 className="font-bold text-sm mb-1 line-clamp-2">{movie.title}</h3>
-          <div className="flex items-center justify-between text-xs mb-2">
-            <span className="text-yellow-400">⭐ {movie.rating || movie.vote_average?.toFixed(1)}</span>
-            <span className="text-gray-300">{movie.year || movie.release_date?.split('-')[0]}</span>
+  // MovieCard Component - FIXED
+  const MovieCard = ({ movie, onClick, showWatchlistButton = true }) => {
+    const [inWatchlist, setInWatchlist] = useState(false);
+    const [loadingWatchlist, setLoadingWatchlist] = useState(false);
+
+    useEffect(() => {
+      if (user && movie.id) {
+        checkWatchlist();
+      }
+    }, [user, movie.id]);
+
+    const checkWatchlist = async () => {
+      const exists = await isInWatchlist(user.uid, movie.id || movie.tmdbId);
+      setInWatchlist(exists);
+    };
+
+    const handleWatchlistToggle = async (e) => {
+      e.stopPropagation();
+      if (!user) return;
+      
+      setLoadingWatchlist(true);
+      if (inWatchlist) {
+        await removeFromWatchlist(user.uid, movie.id || movie.tmdbId);
+        setInWatchlist(false);
+      } else {
+        await addToWatchlist(user.uid, {
+          id: movie.id || movie.tmdbId,
+          title: movie.title,
+          poster: movie.poster || getImageUrl(movie.poster_path),
+          rating: movie.rating || movie.vote_average?.toFixed(1),
+          year: movie.year || movie.release_date?.split('-')[0]
+        });
+        setInWatchlist(true);
+      }
+      setLoadingWatchlist(false);
+    };
+
+    return (
+      <div 
+        onClick={() => onClick && onClick(movie)}
+        className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
+      >
+        <div className="relative rounded-lg overflow-hidden shadow-lg">
+          <img 
+            src={movie.poster || getImageUrl(movie.poster_path)}
+            alt={movie.title}
+            className="w-full h-auto object-cover"
+          />
+          
+          {/* Watchlist Button - Top Left */}
+          {showWatchlistButton && user && (
+            <button
+              onClick={handleWatchlistToggle}
+              disabled={loadingWatchlist}
+              className={`absolute top-2 left-2 p-2 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 ${
+                inWatchlist 
+                  ? 'bg-green-600 hover:bg-green-700' 
+                  : 'bg-black/60 hover:bg-black/80'
+              }`}
+              title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
+            >
+              {loadingWatchlist ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : inWatchlist ? (
+                <span className="text-white text-sm">✓</span>
+              ) : (
+                <span className="text-white text-sm">+</span>
+              )}
+            </button>
+          )}
+          
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+            <h3 className="font-bold text-sm mb-1 line-clamp-2">{movie.title}</h3>
+            <div className="flex items-center justify-between text-xs mb-2">
+              <span className="text-yellow-400">⭐ {movie.rating || movie.vote_average?.toFixed(1)}</span>
+              <span className="text-gray-300">{movie.year || movie.release_date?.split('-')[0]}</span>
+            </div>
+            <p className="text-xs text-gray-300 line-clamp-3">{movie.overview}</p>
           </div>
-          <p className="text-xs text-gray-300 line-clamp-3">{movie.overview}</p>
-        </div>
-        
-        <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-bold text-yellow-400">
-          ⭐ {movie.rating || movie.vote_average?.toFixed(1)}
+          
+          <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-bold text-yellow-400">
+            ⭐ {movie.rating || movie.vote_average?.toFixed(1)}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
   
+  // MAIN RETURN - This is the main component's return
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Hero Search Section */}
@@ -240,6 +302,7 @@ export default function MovieRecommender({ user }) {
                 <MovieCard 
                   key={idx} 
                   movie={movie}
+                  user={user}
                   onClick={(m) => router.push(`/movie/${m.id}`)}
                 />
               ))}
@@ -264,6 +327,7 @@ export default function MovieRecommender({ user }) {
               <MovieCard 
                 key={idx} 
                 movie={movie}
+                user={user}
                 onClick={(m) => router.push(`/movie/${m.tmdbId || m.id}`)}
               />
             ))}
