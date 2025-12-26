@@ -34,33 +34,37 @@ export default function MovieRecommender({ user }) {
   }, [filters, trendingMovies]);
   
   const applyFilters = () => {
-    let filtered = [...trendingMovies];
-    
-    if (filters.genre !== 'All') {
-      const genreMap = {
-        'Action': 28, 'Adventure': 12, 'Animation': 16, 'Comedy': 35,
-        'Crime': 80, 'Documentary': 99, 'Drama': 18, 'Family': 10751,
-        'Fantasy': 14, 'Horror': 27, 'Mystery': 9648, 'Romance': 10749,
-        'Sci-Fi': 878, 'Thriller': 53, 'War': 10752
-      };
-      const genreId = genreMap[filters.genre];
-      filtered = filtered.filter(m => m.genre_ids?.includes(genreId));
-    }
-    
-    if (filters.minRating > 0) {
-      filtered = filtered.filter(m => m.vote_average >= filters.minRating);
-    }
-    
-    if (filters.sortBy === 'rating') {
-      filtered.sort((a, b) => b.vote_average - a.vote_average);
-    } else if (filters.sortBy === 'recent') {
-      filtered.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
-    } else if (filters.sortBy === 'title') {
-      filtered.sort((a, b) => a.title.localeCompare(b.title));
-    }
-    
-    setFilteredMovies(filtered);
+  let filtered = [...trendingMovies];
+  
+  // Genre filter
+  if (filters.genre !== 'All') {
+    const genreMap = {
+      'Action': 28, 'Adventure': 12, 'Animation': 16, 'Comedy': 35,
+      'Crime': 80, 'Documentary': 99, 'Drama': 18, 'Family': 10751,
+      'Fantasy': 14, 'Horror': 27, 'Mystery': 9648, 'Romance': 10749,
+      'Sci-Fi': 878, 'Thriller': 53, 'War': 10752
+    };
+    const genreId = genreMap[filters.genre];
+    filtered = filtered.filter(m => m.genre_ids?.includes(genreId));
+  }
+  
+  // Remove this block - NO MORE RATING FILTER
+  // if (filters.minRating > 0) {
+  //   filtered = filtered.filter(m => m.vote_average >= filters.minRating);
+  // }
+  
+  // Sorting
+  if (filters.sortBy === 'rating') {
+    filtered.sort((a, b) => b.vote_average - a.vote_average);
+  } else if (filters.sortBy === 'recent') {
+    filtered.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+  } else if (filters.sortBy === 'title') {
+    filtered.sort((a, b) => a.title.localeCompare(b.title));
+  }
+  
+  setFilteredMovies(filtered);
   };
+
   
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);

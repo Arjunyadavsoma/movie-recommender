@@ -8,29 +8,23 @@ const GENRES = [
 
 export default function FilterBar({ onFilterChange }) {
   const [selectedGenre, setSelectedGenre] = useState('All');
-  const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState('popularity');
 
   const handleGenreChange = (genre) => {
     setSelectedGenre(genre);
-    onFilterChange({ genre, minRating, sortBy });
-  };
-
-  const handleRatingChange = (rating) => {
-    setMinRating(rating);
-    onFilterChange({ genre: selectedGenre, minRating: rating, sortBy });
+    onFilterChange({ genre, sortBy });
   };
 
   const handleSortChange = (sort) => {
     setSortBy(sort);
-    onFilterChange({ genre: selectedGenre, minRating, sortBy: sort });
+    onFilterChange({ genre: selectedGenre, sortBy: sort });
   };
 
   return (
     <div className="mb-8 space-y-4">
       {/* Genre Pills */}
       <div>
-        <label className="text-sm text-gray-400 mb-2 block">Filter by Genre</label>
+        <label className="text-sm text-gray-400 mb-3 block font-semibold">Filter by Genre</label>
         <div className="flex flex-wrap gap-2">
           {GENRES.map((genre) => (
             <button
@@ -48,38 +42,19 @@ export default function FilterBar({ onFilterChange }) {
         </div>
       </div>
 
-      {/* Rating & Sort */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* Minimum Rating */}
-        <div className="flex-1">
-          <label className="text-sm text-gray-400 mb-2 block">
-            Minimum Rating: <span className="text-yellow-400 font-bold">{minRating}/10</span>
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="10"
-            step="0.5"
-            value={minRating}
-            onChange={(e) => handleRatingChange(parseFloat(e.target.value))}
-            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-netflix"
-          />
-        </div>
-
-        {/* Sort By */}
-        <div className="flex-1">
-          <label className="text-sm text-gray-400 mb-2 block">Sort By</label>
-          <select
-            value={sortBy}
-            onChange={(e) => handleSortChange(e.target.value)}
-            className="w-full px-4 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:border-netflix cursor-pointer"
-          >
-            <option value="popularity">Popularity</option>
-            <option value="rating">Highest Rated</option>
-            <option value="recent">Most Recent</option>
-            <option value="title">Title (A-Z)</option>
-          </select>
-        </div>
+      {/* Sort By */}
+      <div className="flex items-center gap-4">
+        <label className="text-sm text-gray-400 font-semibold">Sort By:</label>
+        <select
+          value={sortBy}
+          onChange={(e) => handleSortChange(e.target.value)}
+          className="px-4 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:border-netflix cursor-pointer"
+        >
+          <option value="popularity">Most Popular</option>
+          <option value="rating">Highest Rated</option>
+          <option value="recent">Most Recent</option>
+          <option value="title">Title (A-Z)</option>
+        </select>
       </div>
     </div>
   );
