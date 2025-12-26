@@ -4,8 +4,6 @@ import { getMovieDetails, getImageUrl, getBackdropUrl } from '../../lib/tmdb';
 import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../../lib/watchlist';
 import Head from 'next/head';
 
-
-
 export default function MovieDetail({ user }) {
   const router = useRouter();
   const { id } = router.query;
@@ -13,13 +11,17 @@ export default function MovieDetail({ user }) {
   const [loading, setLoading] = useState(true);
   const [inWatchlist, setInWatchlist] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
+  const [checkingWatchlist, setCheckingWatchlist] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [showTrailer, setShowTrailer] = useState(false);
   
   useEffect(() => {
-    if (id) {
+    if (id && user) {
       loadMovieDetails();
-      if (user) checkWatchlist();
+      checkWatchlistStatus();
+    } else if (id && !user) {
+      loadMovieDetails();
+      setCheckingWatchlist(false);
     }
   }, [id, user]);
   
@@ -30,36 +32,66 @@ export default function MovieDetail({ user }) {
     setLoading(false);
   };
   
-  const checkWatchlist = async () => {
-    if (user && id) {
+  const checkWatchlistStatus = async () => {
+    if (!user || !id) {
+      setCheckingWatchlist(false);
+      return;
+    }
+    
+    setCheckingWatchlist(true);
+    try {
       const exists = await isInWatchlist(user.uid, id);
+      console.log('Watchlist check result:', exists);
       setInWatchlist(exists);
+    } catch (error) {
+      console.error('Error checking watchlist:', error);
+    } finally {
+      setCheckingWatchlist(false);
     }
   };
   
   const toggleWatchlist = async () => {
-    if (!user || !movie) return;
+    if (!user || !movie) {
+      alert('Please sign in to add movies to your watchlist');
+      return;
+    }
     
-    // Optimistic update - instant UI feedback
+    const previousState = inWatchlist;
+    
+    // Optimistic update
     setInWatchlist(!inWatchlist);
     setWatchlistLoading(true);
     
     try {
-      if (inWatchlist) {
-        await removeFromWatchlist(user.uid, movie.id);
+      if (previousState) {
+        // Remove from watchlist
+        const result = await removeFromWatchlist(user.uid, movie.id);
+        if (!result.success) {
+          throw new Error('Failed to remove from watchlist');
+        }
       } else {
-        await addToWatchlist(user.uid, {
+        // Add to watchlist
+        const result = await addToWatchlist(user.uid, {
           id: movie.id,
           title: movie.title,
           poster: getImageUrl(movie.poster_path),
           rating: movie.vote_average?.toFixed(1),
           year: movie.release_date?.split('-')[0]
         });
+        
+        if (!result.success) {
+          throw new Error('Failed to add to watchlist');
+        }
+        
+        if (result.alreadyExists) {
+          console.log('Movie already in watchlist');
+        }
       }
     } catch (error) {
-      // Revert on error
-      setInWatchlist(!inWatchlist);
       console.error('Watchlist error:', error);
+      // Revert on error
+      setInWatchlist(previousState);
+      alert('Failed to update watchlist. Please try again.');
     } finally {
       setWatchlistLoading(false);
     }
@@ -119,10 +151,8 @@ export default function MovieDetail({ user }) {
             className="h-[70vh] bg-cover bg-center relative"
             style={{ backgroundImage: `url(${getBackdropUrl(movie.backdrop_path)})` }}
           >
-            {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-dark-bg/80 to-dark-bg/40" />
             
-            {/* Back Button */}
             <button
               onClick={() => router.back()}
               className="absolute top-6 left-6 px-4 py-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm text-white rounded-lg transition-all duration-200 flex items-center space-x-2 z-10 group"
@@ -133,11 +163,9 @@ export default function MovieDetail({ user }) {
               <span>Back</span>
             </button>
 
-            {/* Movie Info Overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
               <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row gap-8 items-end">
-                  {/* Poster */}
                   <div className="flex-shrink-0">
                     <img 
                       src={getImageUrl(movie.poster_path, 'w500')}
@@ -146,7 +174,6 @@ export default function MovieDetail({ user }) {
                     />
                   </div>
                   
-                  {/* Title & Meta */}
                   <div className="flex-1 pb-4">
                     <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
                       {movie.title}
@@ -190,15 +217,18 @@ export default function MovieDetail({ user }) {
                       
                       <button
                         onClick={toggleWatchlist}
-                        disabled={watchlistLoading || !user}
+                        disabled={watchlistLoading || checkingWatchlist || !user}
                         className={`px-6 py-3 font-bold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
                           inWatchlist 
                             ? 'bg-green-600 hover:bg-green-700 text-white' 
                             : 'bg-gray-800 hover:bg-gray-700 text-white'
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
-                        {watchlistLoading ? (
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        {watchlistLoading || checkingWatchlist ? (
+                          <>
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Loading...</span>
+                          </>
                         ) : inWatchlist ? (
                           <>
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -261,7 +291,6 @@ export default function MovieDetail({ user }) {
 
         {/* Content Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Tabs */}
           <div className="flex gap-6 mb-8 border-b border-gray-800">
             {['overview', 'cast', 'details'].map((tab) => (
               <button
@@ -278,10 +307,8 @@ export default function MovieDetail({ user }) {
             ))}
           </div>
 
-          {/* Tab Content */}
           {activeTab === 'overview' && (
             <div className="space-y-8">
-              {/* Genres */}
               <div>
                 <h3 className="text-xl font-bold text-white mb-3">Genres</h3>
                 <div className="flex flex-wrap gap-2">
@@ -296,13 +323,11 @@ export default function MovieDetail({ user }) {
                 </div>
               </div>
 
-              {/* Overview */}
               <div>
                 <h3 className="text-xl font-bold text-white mb-3">Storyline</h3>
                 <p className="text-gray-300 text-lg leading-relaxed">{movie.overview}</p>
               </div>
 
-              {/* Tagline */}
               {movie.tagline && (
                 <div className="p-6 bg-card-bg border-l-4 border-netflix rounded-lg">
                   <p className="text-xl italic text-gray-300">"{movie.tagline}"</p>
@@ -315,7 +340,6 @@ export default function MovieDetail({ user }) {
             <div>
               <h3 className="text-2xl font-bold text-white mb-6">Cast & Crew</h3>
               
-              {/* Director */}
               {movie.credits?.crew && (
                 <div className="mb-8">
                   <h4 className="text-lg font-semibold text-gray-400 mb-3">Director</h4>
@@ -336,7 +360,6 @@ export default function MovieDetail({ user }) {
                 </div>
               )}
 
-              {/* Cast Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                 {movie.credits?.cast?.slice(0, 15).map((person) => (
                   <div key={person.id} className="group">
@@ -414,7 +437,6 @@ export default function MovieDetail({ user }) {
   );
 }
 
-// Helper Component
 function DetailRow({ label, value }) {
   return (
     <div className="flex justify-between items-center py-3 border-b border-gray-800">
