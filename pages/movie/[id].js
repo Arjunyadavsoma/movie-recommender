@@ -38,7 +38,7 @@ export default function MovieDetail({ user }) {
 
   const loadSimilarMovies = async () => {
     setLoadingSimilar(true);
-    const similar = await getSimilarMovies(id, 6);
+    const similar = await getSimilarMovies(id, 12);
     setSimilarMovies(similar);
     setLoadingSimilar(false);
   };
@@ -114,7 +114,7 @@ export default function MovieDetail({ user }) {
   
   if (!movie) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
           <div className="text-6xl mb-4">🎬</div>
           <h2 className="text-2xl font-bold text-white mb-3">Movie not found</h2>
@@ -141,79 +141,92 @@ export default function MovieDetail({ user }) {
       </Head>
 
       <div className="min-h-screen">
-        {/* Hero Section - SAME AS BEFORE */}
+        {/* MOBILE-FIRST Hero Section */}
         <div className="relative">
+          {/* Backdrop Image - Optimized Heights */}
           <div 
-            className="h-[70vh] bg-cover bg-center relative"
+            className="h-[45vh] sm:h-[55vh] md:h-[65vh] lg:h-[70vh] bg-cover bg-center relative"
             style={{ backgroundImage: `url(${getBackdropUrl(movie.backdrop_path)})` }}
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-dark-bg/80 to-dark-bg/40" />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-dark-bg/70 to-transparent" />
             
+            {/* Back Button - Always Accessible */}
             <button
               onClick={() => router.back()}
-              className="absolute top-6 left-6 px-4 py-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm text-white rounded-lg transition-all duration-200 flex items-center space-x-2 z-10 group"
+              className="absolute top-3 left-3 sm:top-6 sm:left-6 px-3 py-2 sm:px-4 sm:py-2.5 bg-black/70 hover:bg-black/90 backdrop-blur-md text-white rounded-lg transition-all duration-200 flex items-center gap-2 z-10 group shadow-lg"
             >
               <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              <span>Back</span>
+              <span className="text-sm sm:text-base font-medium">Back</span>
             </button>
 
-            <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+            {/* Content - Bottom Aligned */}
+            <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6 md:p-8">
               <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row gap-8 items-end">
-                  <div className="flex-shrink-0">
+                
+                {/* MOBILE: Vertical Stack, DESKTOP: Horizontal */}
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 md:gap-8">
+                  
+                  {/* Poster */}
+                  <div className="flex-shrink-0 mx-auto sm:mx-0">
                     <img 
-                      src={getImageUrl(movie.poster_path, 'w500')}
+                      src={getImageUrl(movie.poster_path, 'w342')}
                       alt={movie.title}
-                      className="w-48 md:w-64 rounded-xl shadow-2xl border-4 border-dark-bg"
+                      className="w-32 h-48 sm:w-40 sm:h-60 md:w-52 md:h-78 lg:w-64 lg:h-96 rounded-lg shadow-2xl border-2 sm:border-3 border-white/20 object-cover"
                     />
                   </div>
                   
-                  <div className="flex-1 pb-4">
-                    <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
+                  {/* Info */}
+                  <div className="flex-1 text-center sm:text-left min-w-0">
+                    
+                    {/* Title - Larger on Desktop */}
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-2 sm:mb-3 md:mb-4 drop-shadow-2xl leading-tight">
                       {movie.title}
                     </h1>
                     
-                    <div className="flex flex-wrap gap-4 mb-6 items-center">
-                      <div className="flex items-center space-x-2 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg">
-                        <span className="text-yellow-400 text-2xl">⭐</span>
-                        <span className="text-white font-bold text-xl">{movie.vote_average?.toFixed(1)}</span>
-                        <span className="text-gray-400 text-sm">({movie.vote_count?.toLocaleString()} votes)</span>
+                    {/* Meta Info - Compact on Mobile */}
+                    <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
+                      
+                      {/* Rating */}
+                      <div className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg shadow-lg">
+                        <span className="text-yellow-400 text-base sm:text-xl md:text-2xl">⭐</span>
+                        <span className="text-white font-bold text-sm sm:text-base md:text-lg">{movie.vote_average?.toFixed(1)}</span>
                       </div>
                       
-                      <span className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg text-white font-semibold">
+                      {/* Year */}
+                      <div className="bg-black/70 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-white font-semibold text-xs sm:text-sm md:text-base shadow-lg">
                         {movie.release_date?.split('-')[0]}
-                      </span>
+                      </div>
                       
-                      <span className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg text-white">
+                      {/* Runtime - Hidden on smallest screens */}
+                      <div className="hidden xs:block bg-black/70 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-white text-xs sm:text-sm md:text-base shadow-lg">
                         {runtime}
-                      </span>
-                      
-                      {movie.adult && (
-                        <span className="bg-red-600 px-3 py-1 rounded text-white text-sm font-bold">
-                          18+
-                        </span>
-                      )}
+                      </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-3">
+                    {/* Action Buttons - Full Width on Mobile */}
+                    <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
+                      
+                      {/* Trailer Button */}
                       {trailerKey && (
                         <button
                           onClick={() => setShowTrailer(true)}
-                          className="px-6 py-3 bg-white hover:bg-gray-200 text-dark-bg font-bold rounded-lg transition-all duration-200 flex items-center space-x-2"
+                          className="w-full xs:w-auto px-5 py-2.5 sm:px-6 sm:py-3 bg-white hover:bg-gray-100 text-dark-bg font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95"
                         >
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                           </svg>
-                          <span>Play Trailer</span>
+                          <span className="text-sm sm:text-base">Watch Trailer</span>
                         </button>
                       )}
                       
+                      {/* Watchlist Button */}
                       <button
                         onClick={toggleWatchlist}
                         disabled={watchlistLoading || checkingWatchlist || !user}
-                        className={`px-6 py-3 font-bold rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                        className={`w-full xs:w-auto px-5 py-2.5 sm:px-6 sm:py-3 font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95 ${
                           inWatchlist 
                             ? 'bg-green-600 hover:bg-green-700 text-white' 
                             : 'bg-gray-800 hover:bg-gray-700 text-white'
@@ -221,31 +234,24 @@ export default function MovieDetail({ user }) {
                       >
                         {watchlistLoading || checkingWatchlist ? (
                           <>
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            <span>Loading...</span>
+                            <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span className="text-sm sm:text-base">Loading...</span>
                           </>
                         ) : inWatchlist ? (
                           <>
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                             </svg>
-                            <span>In Watchlist</span>
+                            <span className="text-sm sm:text-base">In Watchlist</span>
                           </>
                         ) : (
                           <>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
-                            <span>Add to Watchlist</span>
+                            <span className="text-sm sm:text-base">Add to List</span>
                           </>
                         )}
-                      </button>
-                      
-                      <button
-                        onClick={() => window.open(`https://www.imdb.com/title/${movie.imdb_id}`, '_blank')}
-                        className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-dark-bg font-bold rounded-lg transition-all duration-200"
-                      >
-                        IMDb
                       </button>
                     </div>
                   </div>
@@ -255,18 +261,19 @@ export default function MovieDetail({ user }) {
           </div>
         </div>
 
-        {/* Trailer Modal - SAME AS BEFORE */}
+        {/* Trailer Modal - Optimized for Mobile */}
         {showTrailer && trailerKey && (
           <div 
-            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-3 sm:p-4"
             onClick={() => setShowTrailer(false)}
           >
             <div className="relative w-full max-w-5xl aspect-video" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => setShowTrailer(false)}
-                className="absolute -top-12 right-0 text-white hover:text-netflix transition-colors"
+                className="absolute -top-8 sm:-top-12 right-0 text-white hover:text-netflix transition-colors p-2"
+                aria-label="Close trailer"
               >
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -285,175 +292,195 @@ export default function MovieDetail({ user }) {
         )}
 
         {/* Content Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Tabs */}
-          <div className="flex gap-6 mb-8 border-b border-gray-800">
-            {['overview', 'cast', 'details'].map((tab) => (
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 md:py-12">
+          
+          {/* Genres - Scrollable on Mobile */}
+          <div className="mb-4 sm:mb-6 md:mb-8">
+            <div className="flex flex-wrap gap-2">
+              {movie.genres?.map((genre) => (
+                <span 
+                  key={genre.id} 
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-800 hover:bg-gray-700 rounded-full text-white transition-colors duration-200 text-sm sm:text-base font-medium"
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Tabs - Horizontal Scroll on Mobile */}
+          <div className="flex gap-4 sm:gap-6 mb-4 sm:mb-6 md:mb-8 border-b border-gray-800 overflow-x-auto no-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0">
+            {[
+              { id: 'overview', label: 'Overview', icon: '📖' },
+              { id: 'cast', label: 'Cast', icon: '🎭' },
+              { id: 'details', label: 'Details', icon: 'ℹ️' }
+            ].map((tab) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`pb-4 text-lg font-semibold capitalize transition-all duration-200 ${
-                  activeTab === tab
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`pb-3 sm:pb-4 text-sm sm:text-base md:text-lg font-semibold transition-all duration-200 whitespace-nowrap flex items-center gap-2 ${
+                  activeTab === tab.id
                     ? 'text-netflix border-b-2 border-netflix'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                {tab}
+                <span className="hidden xs:inline">{tab.icon}</span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>
 
           {/* Tab Content */}
-          {activeTab === 'overview' && (
-            <div className="space-y-8">
-              <div>
-                <h3 className="text-xl font-bold text-white mb-3">Genres</h3>
-                <div className="flex flex-wrap gap-2">
-                  {movie.genres?.map((genre) => (
-                    <span 
-                      key={genre.id} 
-                      className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-full text-white transition-colors duration-200 cursor-pointer"
-                    >
-                      {genre.name}
-                    </span>
-                  ))}
+          <div className="min-h-[300px]">
+            
+            {/* Overview Tab */}
+            {activeTab === 'overview' && (
+              <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-fadeIn">
+                <div>
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-2 sm:mb-3 md:mb-4">📖 Storyline</h3>
+                  <p className="text-gray-300 text-sm sm:text-base md:text-lg leading-relaxed">{movie.overview}</p>
+                </div>
+
+                {movie.tagline && (
+                  <div className="p-4 sm:p-6 bg-card-bg border-l-4 border-netflix rounded-lg">
+                    <p className="text-base sm:text-lg md:text-xl italic text-gray-300">"{movie.tagline}"</p>
+                  </div>
+                )}
+
+                {/* Quick Facts on Mobile */}
+                <div className="grid grid-cols-2 gap-3 sm:hidden">
+                  <div className="bg-card-bg p-3 rounded-lg">
+                    <p className="text-gray-400 text-xs mb-1">Runtime</p>
+                    <p className="text-white font-semibold text-sm">{runtime}</p>
+                  </div>
+                  <div className="bg-card-bg p-3 rounded-lg">
+                    <p className="text-gray-400 text-xs mb-1">Status</p>
+                    <p className="text-white font-semibold text-sm">{movie.status}</p>
+                  </div>
                 </div>
               </div>
+            )}
 
-              <div>
-                <h3 className="text-xl font-bold text-white mb-3">Storyline</h3>
-                <p className="text-gray-300 text-lg leading-relaxed">{movie.overview}</p>
-              </div>
+            {/* Cast Tab */}
+            {activeTab === 'cast' && (
+              <div className="animate-fadeIn">
+                
+                {/* Director */}
+                {movie.credits?.crew && (
+                  <div className="mb-6 sm:mb-8">
+                    <h4 className="text-base sm:text-lg md:text-xl font-semibold text-gray-400 mb-3 sm:mb-4">🎬 Director</h4>
+                    <div className="flex flex-wrap gap-4">
+                      {movie.credits.crew
+                        .filter(person => person.job === 'Director')
+                        .map((director) => (
+                          <div key={director.id} className="text-center">
+                            <img
+                              src={getImageUrl(director.profile_path, 'w185')}
+                              alt={director.name}
+                              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full object-cover mb-2 border-2 border-netflix shadow-lg"
+                            />
+                            <p className="text-white font-semibold text-xs sm:text-sm md:text-base max-w-[100px] mx-auto">{director.name}</p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
 
-              {movie.tagline && (
-                <div className="p-6 bg-card-bg border-l-4 border-netflix rounded-lg">
-                  <p className="text-xl italic text-gray-300">"{movie.tagline}"</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'cast' && (
-            <div>
-              <h3 className="text-2xl font-bold text-white mb-6">Cast & Crew</h3>
-              
-              {movie.credits?.crew && (
-                <div className="mb-8">
-                  <h4 className="text-lg font-semibold text-gray-400 mb-3">Director</h4>
-                  <div className="flex flex-wrap gap-4">
-                    {movie.credits.crew
-                      .filter(person => person.job === 'Director')
-                      .map((director) => (
-                        <div key={director.id} className="text-center">
-                          <img
-                            src={getImageUrl(director.profile_path, 'w185')}
-                            alt={director.name}
-                            className="w-24 h-24 rounded-full object-cover mb-2 border-2 border-netflix"
-                          />
-                          <p className="text-white font-semibold">{director.name}</p>
+                {/* Cast - Horizontal Scroll on Mobile */}
+                <div>
+                  <h4 className="text-base sm:text-lg md:text-xl font-semibold text-gray-400 mb-3 sm:mb-4">🎭 Cast</h4>
+                  <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 pb-2">
+                    <div className="flex sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+                      {movie.credits?.cast?.slice(0, 15).map((person) => (
+                        <div key={person.id} className="group flex-shrink-0 w-28 sm:w-auto">
+                          <div className="relative overflow-hidden rounded-lg mb-2 shadow-lg">
+                            <img
+                              src={getImageUrl(person.profile_path, 'w185')}
+                              alt={person.name}
+                              className="w-full h-36 sm:h-48 md:h-64 object-cover group-hover:scale-110 transition-transform duration-300"
+                              loading="lazy"
+                            />
+                          </div>
+                          <p className="text-white font-semibold text-xs sm:text-sm line-clamp-2">{person.name}</p>
+                          <p className="text-gray-400 text-xs line-clamp-1">{person.character}</p>
                         </div>
                       ))}
+                    </div>
                   </div>
                 </div>
-              )}
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                {movie.credits?.cast?.slice(0, 15).map((person) => (
-                  <div key={person.id} className="group">
-                    <div className="relative overflow-hidden rounded-lg mb-3">
-                      <img
-                        src={getImageUrl(person.profile_path, 'w185')}
-                        alt={person.name}
-                        className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-                        <p className="text-white text-sm">{person.character}</p>
-                      </div>
-                    </div>
-                    <p className="text-white font-semibold text-sm">{person.name}</p>
-                    <p className="text-gray-400 text-xs">{person.character}</p>
-                  </div>
-                ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 'details' && (
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-4">
+            {/* Details Tab */}
+            {activeTab === 'details' && (
+              <div className="space-y-3 sm:space-y-4 md:space-y-6 animate-fadeIn">
                 <DetailRow label="Status" value={movie.status} />
                 <DetailRow label="Release Date" value={new Date(movie.release_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} />
                 <DetailRow label="Runtime" value={runtime} />
                 <DetailRow label="Budget" value={movie.budget ? `$${(movie.budget / 1000000).toFixed(1)}M` : 'N/A'} />
                 <DetailRow label="Revenue" value={revenue} />
-                <DetailRow label="Original Language" value={movie.original_language?.toUpperCase()} />
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-400 mb-2">Production Companies</h4>
-                  <div className="flex flex-wrap gap-3">
-                    {movie.production_companies?.map((company) => (
-                      <span key={company.id} className="px-3 py-1 bg-card-bg rounded text-gray-300 text-sm">
-                        {company.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                <DetailRow label="Language" value={movie.original_language?.toUpperCase()} />
                 
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-400 mb-2">Production Countries</h4>
+                <div className="pt-3 sm:pt-4 md:pt-6 border-t border-gray-800">
+                  <h4 className="text-sm sm:text-base md:text-lg font-semibold text-gray-400 mb-2 sm:mb-3">Production Companies</h4>
                   <div className="flex flex-wrap gap-2">
-                    {movie.production_countries?.map((country) => (
-                      <span key={country.iso_3166_1} className="px-3 py-1 bg-card-bg rounded text-gray-300 text-sm">
-                        {country.name}
+                    {movie.production_companies?.map((company) => (
+                      <span key={company.id} className="px-3 py-1.5 bg-card-bg rounded-lg text-gray-300 text-xs sm:text-sm">
+                        {company.name}
                       </span>
                     ))}
                   </div>
                 </div>
 
                 {movie.homepage && (
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-400 mb-2">Official Website</h4>
+                  <div className="pt-3 sm:pt-4">
+                    <h4 className="text-sm sm:text-base md:text-lg font-semibold text-gray-400 mb-2">Official Website</h4>
                     <a 
                       href={movie.homepage} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-netflix hover:underline"
+                      className="text-netflix hover:underline text-sm sm:text-base break-all inline-flex items-center gap-2"
                     >
-                      Visit Website →
+                      <span>Visit Website</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
                     </a>
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* 🆕 SIMILAR MOVIES SECTION - NEW! */}
+        {/* Similar Movies - Full Width Background */}
         {similarMovies.length > 0 && (
-          <div className="bg-card-bg py-12">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl md:text-3xl font-bold text-white">
-                  More Like This
+          <div className="bg-card-bg py-6 sm:py-10 md:py-12 mt-6 sm:mt-10">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white flex items-center gap-2">
+                  <span>🎬</span>
+                  <span>More Like This</span>
                 </h3>
-                <span className="text-gray-400 text-sm">{similarMovies.length} similar movies</span>
+                <span className="text-gray-400 text-xs sm:text-sm font-medium">{similarMovies.length} movies</span>
               </div>
 
               {loadingSimilar ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
                   {[...Array(6)].map((_, idx) => (
-                    <div key={idx} className="shimmer rounded-lg h-80"></div>
+                    <div key={idx} className="shimmer rounded-lg h-56 sm:h-64 md:h-80"></div>
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
                   {similarMovies.map((similarMovie) => (
                     <SimilarMovieCard 
                       key={similarMovie.id}
                       movie={similarMovie}
-                      onNavigate={() => router.push(`/movie/${similarMovie.id}`)}
+                      onNavigate={() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        router.push(`/movie/${similarMovie.id}`);
+                      }}
                     />
                   ))}
                 </div>
@@ -466,22 +493,22 @@ export default function MovieDetail({ user }) {
   );
 }
 
-// Helper Component for Detail Rows
+// Optimized Detail Row
 function DetailRow({ label, value }) {
   return (
-    <div className="flex justify-between items-center py-3 border-b border-gray-800">
-      <span className="text-gray-400 font-semibold">{label}</span>
-      <span className="text-white">{value}</span>
+    <div className="flex justify-between items-start py-2 sm:py-3 border-b border-gray-800 gap-4">
+      <span className="text-gray-400 font-semibold text-xs sm:text-sm md:text-base flex-shrink-0">{label}</span>
+      <span className="text-white text-xs sm:text-sm md:text-base text-right">{value}</span>
     </div>
   );
 }
 
-// 🆕 NEW: Similar Movie Card Component
+// Optimized Similar Movie Card
 function SimilarMovieCard({ movie, onNavigate }) {
   return (
     <div 
       onClick={onNavigate}
-      className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
+      className="group cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
     >
       <div className="relative rounded-lg overflow-hidden shadow-lg">
         <img 
@@ -492,24 +519,25 @@ function SimilarMovieCard({ movie, onNavigate }) {
         />
         
         {/* Rating Badge */}
-        <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-bold text-yellow-400">
+        <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-black/80 backdrop-blur-sm px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-bold text-yellow-400 shadow-lg">
           ⭐ {movie.vote_average?.toFixed(1)}
         </div>
         
-        {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+        {/* Hover Overlay - Desktop Only */}
+        <div className="hidden md:flex absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-col justify-end p-3">
           <h4 className="font-bold text-sm mb-1 line-clamp-2 text-white">{movie.title}</h4>
-          <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center justify-between text-xs mb-2">
             <span className="text-yellow-400">⭐ {movie.vote_average?.toFixed(1)}</span>
             <span className="text-gray-300">{movie.release_date?.split('-')[0]}</span>
           </div>
-          <p className="text-xs text-gray-300 line-clamp-2 mt-2">{movie.overview}</p>
+          <p className="text-xs text-gray-300 line-clamp-2">{movie.overview}</p>
         </div>
       </div>
       
-      {/* Title below poster (visible on mobile) */}
-      <div className="mt-2 lg:hidden">
-        <h4 className="text-white font-semibold text-sm line-clamp-2">{movie.title}</h4>
+      {/* Mobile: Title Below Poster */}
+      <div className="mt-2 md:hidden">
+        <h4 className="text-white font-semibold text-xs leading-tight line-clamp-2 mb-0.5">{movie.title}</h4>
+        <span className="text-gray-400 text-xs">{movie.release_date?.split('-')[0]}</span>
       </div>
     </div>
   );

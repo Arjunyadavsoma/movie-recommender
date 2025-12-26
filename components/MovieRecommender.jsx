@@ -272,12 +272,7 @@ export default function MovieRecommender({ user }) {
               </div>
             )}
             
-            {/* Similarity score (only for recommendations) */}
-            {showMetadata && movie.similarity_score && (
-              <div className="text-xs text-green-400 mb-1">
-                {(movie.similarity_score * 100).toFixed(0)}% match
-              </div>
-            )}
+        
             
             <p className="text-xs text-gray-300 line-clamp-3">{movie.overview}</p>
           </div>
