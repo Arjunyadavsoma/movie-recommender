@@ -1,13 +1,26 @@
 import { useState, useEffect } from 'react';
-import { searchMovie, getImageUrl } from '../lib/tmdb';
+import { searchMovie, getImageUrl, getTrendingMovies } from '../lib/tmdb';
+import { useRouter } from 'next/router';
 
 export default function MovieRecommender({ user }) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
+  const [trendingMovies, setTrendingMovies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Load trending movies on mount
+  useEffect(() => {
+    loadTrendingMovies();
+  }, []);
+  
+  const loadTrendingMovies = async () => {
+    const trending = await getTrendingMovies('day');
+    setTrendingMovies(trending.slice(0, 12));
+  };
   
   useEffect(() => {
     if (searchQuery.length < 2) {
@@ -56,11 +69,11 @@ export default function MovieRecommender({ user }) {
           return {
             title: movie.title,
             id: movie.id,
+            tmdbId: tmdbData?.id,
             poster: tmdbData ? getImageUrl(tmdbData.poster_path) : '/placeholder-movie.png',
             rating: tmdbData?.vote_average?.toFixed(1) || 'N/A',
             year: tmdbData?.release_date?.split('-')[0] || 'N/A',
-            overview: tmdbData?.overview || 'No description available.',
-            genres: tmdbData?.genre_ids?.slice(0, 2) || []
+            overview: tmdbData?.overview || 'No description available.'
           };
         })
       );
@@ -74,6 +87,34 @@ export default function MovieRecommender({ user }) {
       setLoading(false);
     }
   };
+  
+  const MovieCard = ({ movie, onClick }) => (
+    <div 
+      onClick={() => onClick && onClick(movie)}
+      className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
+    >
+      <div className="relative rounded-lg overflow-hidden shadow-lg">
+        <img 
+          src={movie.poster || getImageUrl(movie.poster_path)}
+          alt={movie.title}
+          className="w-full h-auto object-cover"
+        />
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+          <h3 className="font-bold text-sm mb-1 line-clamp-2">{movie.title}</h3>
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="text-yellow-400">⭐ {movie.rating || movie.vote_average?.toFixed(1)}</span>
+            <span className="text-gray-300">{movie.year || movie.release_date?.split('-')[0]}</span>
+          </div>
+          <p className="text-xs text-gray-300 line-clamp-3">{movie.overview}</p>
+        </div>
+        
+        <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-bold text-yellow-400">
+          ⭐ {movie.rating || movie.vote_average?.toFixed(1)}
+        </div>
+      </div>
+    </div>
+  );
   
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -100,7 +141,6 @@ export default function MovieRecommender({ user }) {
             </div>
           </div>
           
-          {/* Autocomplete Dropdown */}
           {suggestions.length > 0 && (
             <ul className="absolute z-10 w-full mt-2 bg-card-bg border border-gray-700 rounded-xl shadow-2xl max-h-80 overflow-y-auto">
               {suggestions.map((title, idx) => (
@@ -123,14 +163,28 @@ export default function MovieRecommender({ user }) {
         )}
       </div>
       
-      {/* Error Message */}
       {error && (
         <div className="max-w-2xl mx-auto mb-8 p-4 bg-red-900/20 border border-red-800 rounded-lg text-red-400 text-center">
           {error}
         </div>
       )}
       
-      {/* Loading Skeletons */}
+      {/* Trending Section (show when no search) */}
+      {!selectedMovie && !loading && trendingMovies.length > 0 && (
+        <div className="mb-12">
+          <h3 className="text-2xl font-bold mb-6 text-white">🔥 Trending Today</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+            {trendingMovies.map((movie, idx) => (
+              <MovieCard 
+                key={idx} 
+                movie={movie}
+                onClick={(m) => router.push(`/movie/${m.id}`)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      
       {loading && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
           {[...Array(12)].map((_, idx) => (
@@ -139,43 +193,22 @@ export default function MovieRecommender({ user }) {
         </div>
       )}
       
-      {/* Recommendations Grid */}
       {!loading && recommendations.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-          {recommendations.map((movie, idx) => (
-            <div 
-              key={idx} 
-              className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
-            >
-              <div className="relative rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src={movie.poster} 
-                  alt={movie.title}
-                  className="w-full h-auto object-cover"
-                />
-                
-                {/* Overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-                  <h3 className="font-bold text-sm mb-1 line-clamp-2">{movie.title}</h3>
-                  <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="text-yellow-400">⭐ {movie.rating}</span>
-                    <span className="text-gray-300">{movie.year}</span>
-                  </div>
-                  <p className="text-xs text-gray-300 line-clamp-3">{movie.overview}</p>
-                </div>
-                
-                {/* Rating badge */}
-                <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-bold text-yellow-400">
-                  ⭐ {movie.rating}
-                </div>
-              </div>
-            </div>
-          ))}
+        <div>
+          <h3 className="text-2xl font-bold mb-6 text-white">Similar Movies</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+            {recommendations.map((movie, idx) => (
+              <MovieCard 
+                key={idx} 
+                movie={movie}
+                onClick={(m) => router.push(`/movie/${m.tmdbId || m.id}`)}
+              />
+            ))}
+          </div>
         </div>
       )}
       
-      {/* Empty State */}
-      {!loading && !selectedMovie && (
+      {!loading && !selectedMovie && trendingMovies.length === 0 && (
         <div className="text-center py-20">
           <div className="text-6xl mb-4">🎬</div>
           <p className="text-gray-400 text-xl">Search for a movie to get started</p>
