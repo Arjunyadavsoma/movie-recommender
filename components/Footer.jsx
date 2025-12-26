@@ -62,7 +62,7 @@ export default function Footer() {
             <h4 className="text-white font-bold mb-4">Connect</h4>
             <div className="space-y-3">
               <a 
-                href="https://github.com/yourusername" 
+                href="https://github.com/Arjunyadavsoma" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm"
@@ -86,7 +86,7 @@ export default function Footer() {
               </a>
               
               <a 
-                href="mailto:your.email@example.com"
+                href="mailto:arjunyadav35763@example.com"
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -234,13 +234,7 @@ export default function App({ Component, pageProps }) {
                   🚀 Get Started
                 </button>
                 
-                <div>
-                  <Link href="/about">
-                    <a className="text-gray-400 hover:text-white transition-colors underline">
-                      Learn more about MovieRec AI
-                    </a>
-                  </Link>
-                </div>
+                
               </div>
               
               {/* Features Preview */}
