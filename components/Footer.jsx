@@ -86,7 +86,7 @@ export default function Footer() {
               </a>
               
               <a 
-                href="mailto:arjunyadav35763@example.com"
+                href="mailto:arjunyadav35763@gmail.com"
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

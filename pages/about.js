@@ -401,7 +401,7 @@ export default function About() {
                   
                   <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                     <a 
-                      href="https://github.com/yourusername" 
+                      href="https://github.com/Arjunyadavsoma" 
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors flex items-center gap-2"
@@ -413,7 +413,7 @@ export default function About() {
                     </a>
                     
                     <a 
-                      href="https://linkedin.com/in/yourprofile" 
+                      href="https://linkedin.com/in/arjun-yadav-b21133284" 
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2"
@@ -425,7 +425,7 @@ export default function About() {
                     </a>
                     
                     <a 
-                      href="mailto:your.email@example.com"
+                      href="mailto:arjunyadav35763@gmail.com"
                       className="px-6 py-3 bg-netflix hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

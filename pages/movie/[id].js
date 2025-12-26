@@ -141,20 +141,20 @@ export default function MovieDetail({ user }) {
       </Head>
 
       <div className="min-h-screen">
-        {/* MOBILE-FIRST Hero Section */}
+        {/* MOBILE-OPTIMIZED Hero Section - NO OVERLAP */}
         <div className="relative">
-          {/* Backdrop Image - Optimized Heights */}
+          {/* Backdrop Image - Taller height, stronger gradient */}
           <div 
-            className="h-[45vh] sm:h-[55vh] md:h-[65vh] lg:h-[70vh] bg-cover bg-center relative"
+            className="h-[55vh] sm:h-[60vh] md:h-[70vh] lg:h-[75vh] bg-cover bg-center relative"
             style={{ backgroundImage: `url(${getBackdropUrl(movie.backdrop_path)})` }}
           >
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-dark-bg/70 to-transparent" />
+            {/* Stronger Gradient Overlay - Prevents header blending */}
+            <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-dark-bg/80 to-dark-bg/30 sm:to-transparent" />
             
-            {/* Back Button - Always Accessible */}
+            {/* Back Button - Clearly visible */}
             <button
               onClick={() => router.back()}
-              className="absolute top-3 left-3 sm:top-6 sm:left-6 px-3 py-2 sm:px-4 sm:py-2.5 bg-black/70 hover:bg-black/90 backdrop-blur-md text-white rounded-lg transition-all duration-200 flex items-center gap-2 z-10 group shadow-lg"
+              className="absolute top-4 left-4 sm:top-6 sm:left-6 px-3 py-2 sm:px-4 sm:py-2.5 bg-black/80 hover:bg-black/95 backdrop-blur-md text-white rounded-lg transition-all duration-200 flex items-center gap-2 z-20 group shadow-xl"
             >
               <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -162,60 +162,60 @@ export default function MovieDetail({ user }) {
               <span className="text-sm sm:text-base font-medium">Back</span>
             </button>
 
-            {/* Content - Bottom Aligned */}
-            <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6 md:p-8">
+            {/* Content - More padding at bottom for mobile */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8 pb-8 sm:pb-10">
               <div className="max-w-7xl mx-auto">
                 
-                {/* MOBILE: Vertical Stack, DESKTOP: Horizontal */}
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 md:gap-8">
+                {/* Layout: Vertical on mobile, Horizontal on desktop */}
+                <div className="flex flex-col sm:flex-row gap-5 sm:gap-6 md:gap-8 items-center sm:items-end">
                   
-                  {/* Poster */}
-                  <div className="flex-shrink-0 mx-auto sm:mx-0">
+                  {/* Poster - Slightly larger on mobile, centered */}
+                  <div className="flex-shrink-0">
                     <img 
                       src={getImageUrl(movie.poster_path, 'w342')}
                       alt={movie.title}
-                      className="w-32 h-48 sm:w-40 sm:h-60 md:w-52 md:h-78 lg:w-64 lg:h-96 rounded-lg shadow-2xl border-2 sm:border-3 border-white/20 object-cover"
+                      className="w-36 h-54 sm:w-40 sm:h-60 md:w-52 md:h-78 lg:w-64 lg:h-96 rounded-lg shadow-2xl border-2 sm:border-3 border-white/30 object-cover"
                     />
                   </div>
                   
-                  {/* Info */}
-                  <div className="flex-1 text-center sm:text-left min-w-0">
+                  {/* Info - Better spacing */}
+                  <div className="flex-1 text-center sm:text-left min-w-0 space-y-3 sm:space-y-4">
                     
-                    {/* Title - Larger on Desktop */}
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-2 sm:mb-3 md:mb-4 drop-shadow-2xl leading-tight">
+                    {/* Title - Responsive sizing */}
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white drop-shadow-2xl leading-tight line-clamp-3">
                       {movie.title}
                     </h1>
                     
-                    {/* Meta Info - Compact on Mobile */}
-                    <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
+                    {/* Meta Info - All visible on mobile */}
+                    <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3">
                       
                       {/* Rating */}
-                      <div className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg shadow-lg">
-                        <span className="text-yellow-400 text-base sm:text-xl md:text-2xl">⭐</span>
+                      <div className="flex items-center gap-1.5 bg-black/80 backdrop-blur-md px-3 py-2 sm:px-4 sm:py-2 rounded-lg shadow-lg">
+                        <span className="text-yellow-400 text-lg sm:text-xl md:text-2xl">⭐</span>
                         <span className="text-white font-bold text-sm sm:text-base md:text-lg">{movie.vote_average?.toFixed(1)}</span>
                       </div>
                       
                       {/* Year */}
-                      <div className="bg-black/70 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-white font-semibold text-xs sm:text-sm md:text-base shadow-lg">
+                      <div className="bg-black/80 backdrop-blur-md px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-white font-semibold text-sm sm:text-base shadow-lg">
                         {movie.release_date?.split('-')[0]}
                       </div>
                       
-                      {/* Runtime - Hidden on smallest screens */}
-                      <div className="hidden xs:block bg-black/70 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-white text-xs sm:text-sm md:text-base shadow-lg">
+                      {/* Runtime - Always visible */}
+                      <div className="bg-black/80 backdrop-blur-md px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-white text-sm sm:text-base shadow-lg">
                         {runtime}
                       </div>
                     </div>
 
-                    {/* Action Buttons - Full Width on Mobile */}
-                    <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
+                    {/* Action Buttons - Better mobile layout */}
+                    <div className="flex flex-col xs:flex-row gap-3 pt-2">
                       
                       {/* Trailer Button */}
                       {trailerKey && (
                         <button
                           onClick={() => setShowTrailer(true)}
-                          className="w-full xs:w-auto px-5 py-2.5 sm:px-6 sm:py-3 bg-white hover:bg-gray-100 text-dark-bg font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95"
+                          className="w-full xs:w-auto px-6 py-3 bg-white hover:bg-gray-100 text-dark-bg font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95"
                         >
-                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                           </svg>
                           <span className="text-sm sm:text-base">Watch Trailer</span>
@@ -226,7 +226,7 @@ export default function MovieDetail({ user }) {
                       <button
                         onClick={toggleWatchlist}
                         disabled={watchlistLoading || checkingWatchlist || !user}
-                        className={`w-full xs:w-auto px-5 py-2.5 sm:px-6 sm:py-3 font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95 ${
+                        className={`w-full xs:w-auto px-6 py-3 font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95 ${
                           inWatchlist 
                             ? 'bg-green-600 hover:bg-green-700 text-white' 
                             : 'bg-gray-800 hover:bg-gray-700 text-white'
@@ -234,19 +234,19 @@ export default function MovieDetail({ user }) {
                       >
                         {watchlistLoading || checkingWatchlist ? (
                           <>
-                            <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                             <span className="text-sm sm:text-base">Loading...</span>
                           </>
                         ) : inWatchlist ? (
                           <>
-                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                             </svg>
                             <span className="text-sm sm:text-base">In Watchlist</span>
                           </>
                         ) : (
                           <>
-                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
                             <span className="text-sm sm:text-base">Add to List</span>
@@ -294,7 +294,7 @@ export default function MovieDetail({ user }) {
         {/* Content Section */}
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 md:py-12">
           
-          {/* Genres - Scrollable on Mobile */}
+          {/* Genres */}
           <div className="mb-4 sm:mb-6 md:mb-8">
             <div className="flex flex-wrap gap-2">
               {movie.genres?.map((genre) => (
@@ -493,7 +493,7 @@ export default function MovieDetail({ user }) {
   );
 }
 
-// Optimized Detail Row
+// Optimized Detail Row Component
 function DetailRow({ label, value }) {
   return (
     <div className="flex justify-between items-start py-2 sm:py-3 border-b border-gray-800 gap-4">
@@ -503,7 +503,7 @@ function DetailRow({ label, value }) {
   );
 }
 
-// Optimized Similar Movie Card
+// Optimized Similar Movie Card Component
 function SimilarMovieCard({ movie, onNavigate }) {
   return (
     <div 

@@ -2,14 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===================================
+   CSS VARIABLES & THEME
+   =================================== */
+:root {
+  --netflix: #E50914;
+  --dark-bg: #0a0a0a;
+  --card-bg: #1a1a1a;
+}
+
+/* ===================================
+   BASE LAYER - Global Defaults
+   =================================== */
 @layer base {
+  html {
+    @apply scroll-smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
   body {
     @apply bg-dark-bg text-white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  main {
+    min-height: calc(100vh - 64px);
+  }
+  
+  img {
+    image-rendering: -webkit-optimize-contrast;
+  }
+  
+  * {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
+/* ===================================
+   COMPONENTS LAYER - Reusable Components
+   =================================== */
 @layer components {
+  /* Movie Cards */
+  .movie-card {
+    @apply select-none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Shimmer Loading Effect */
   .shimmer {
+    animation: shimmer 2s infinite linear;
     background: linear-gradient(
       to right,
       #1f1f1f 0%,
@@ -18,10 +62,57 @@
       #1f1f1f 100%
     );
     background-size: 1000px 100%;
-    animation: shimmer 2s infinite;
+  }
+  
+  /* Page Content Wrapper */
+  .page-content {
+    scroll-margin-top: 80px;
   }
 }
-/* Shimmer loading effect */
+
+/* ===================================
+   UTILITIES LAYER - Custom Utilities
+   =================================== */
+@layer utilities {
+  /* Background Utilities */
+  .bg-dark-bg {
+    background-color: var(--dark-bg);
+  }
+  
+  .bg-card-bg {
+    background-color: var(--card-bg);
+  }
+  
+  .bg-netflix {
+    background-color: var(--netflix);
+  }
+  
+  /* Text Utilities */
+  .text-netflix {
+    color: var(--netflix);
+  }
+  
+  /* Border Utilities */
+  .border-netflix {
+    border-color: var(--netflix);
+  }
+  
+  /* Hide Scrollbar */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ===================================
+   ANIMATIONS - Keyframes
+   =================================== */
+
+/* Shimmer Loading Animation */
 @keyframes shimmer {
   0% {
     background-position: -1000px 0;
@@ -31,273 +122,7 @@
   }
 }
 
-.shimmer {
-  animation: shimmer 2s infinite linear;
-  background: linear-gradient(
-    to right,
-    #1f1f1f 0%,
-    #2a2a2a 20%,
-    #1f1f1f 40%,
-    #1f1f1f 100%
-  );
-  background-size: 1000px 100%;
-}
-/* Shimmer loading animation */
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-.shimmer {
-  animation: shimmer 2s infinite linear;
-  background: linear-gradient(
-    to right,
-    #1f1f1f 0%,
-    #2a2a2a 20%,
-    #1f1f1f 40%,
-    #1f1f1f 100%
-  );
-  background-size: 1000px 100%;
-}
-
-/* Smooth transitions */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Better scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #0a0a0a;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #E50914;
-}
-/* Hide scrollbar for horizontal scroll on mobile */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Better touch targets on mobile */
-@media (max-width: 640px) {
-  button, a {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-/* Prevent text selection on double tap */
-.movie-card {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Better image loading */
-img {
-  image-rendering: -webkit-optimize-contrast;
-}
-/* Smooth mobile menu animations */
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Prevent content shift when menu opens */
-body.menu-open {
-  overflow: hidden;
-}
-
-/* Better tap highlights on mobile */
-@media (max-width: 768px) {
-  a, button {
-    -webkit-tap-highlight-color: rgba(229, 9, 20, 0.2);
-  }
-}
-
-/* Smooth scrolling for mobile */
-html {
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Better header shadow on scroll */
-nav {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
-/* Hamburger menu animation */
-.hamburger-line {
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Root Variables */
-:root {
-  --netflix: #E50914;
-  --dark-bg: #0a0a0a;
-  --card-bg: #1a1a1a;
-}
-
-/* Base Styles */
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background-color: var(--dark-bg);
-  color: white;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Ensure content doesn't hide behind sticky header */
-main {
-  min-height: calc(100vh - 64px); /* 64px is header height */
-}
-
-/* Page wrapper - adds scroll margin to account for sticky header */
-.page-content {
-  scroll-margin-top: 80px;
-}
-
-/* Shimmer loading animation */
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-.shimmer {
-  animation: shimmer 2s infinite linear;
-  background: linear-gradient(
-    to right,
-    #1f1f1f 0%,
-    #2a2a2a 20%,
-    #1f1f1f 40%,
-    #1f1f1f 100%
-  );
-  background-size: 1000px 100%;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #0a0a0a;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--netflix);
-}
-
-/* Hide scrollbar for horizontal scroll on mobile */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Better touch targets on mobile */
-@media (max-width: 640px) {
-  button, a {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-/* Prevent text selection on double tap */
-.movie-card {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Better image loading */
-img {
-  image-rendering: -webkit-optimize-contrast;
-}
-
-/* Smooth transitions */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Utility Classes */
-.bg-dark-bg {
-  background-color: var(--dark-bg);
-}
-
-.bg-card-bg {
-  background-color: var(--card-bg);
-}
-
-.text-netflix {
-  color: var(--netflix);
-}
-
-.bg-netflix {
-  background-color: var(--netflix);
-}
-
-.border-netflix {
-  border-color: var(--netflix);
-}
-/* Fade in animation for tab content */
+/* Fade In Animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -309,26 +134,134 @@ img {
   }
 }
 
+/* Slide In from Right */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Animation Classes */
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Extra small breakpoint for tiny phones */
+.hamburger-line {
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ===================================
+   CUSTOM SCROLLBAR
+   =================================== */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--netflix);
+}
+
+/* ===================================
+   NAVIGATION STYLES
+   =================================== */
+nav {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Prevent body scroll when menu is open */
+body.menu-open {
+  overflow: hidden;
+}
+
+/* ===================================
+   RESPONSIVE BREAKPOINTS
+   =================================== */
+
+/* Extra Small Devices (360px+) */
 @media (min-width: 360px) {
   .xs\:flex-row {
     flex-direction: row;
   }
+  
   .xs\:inline {
     display: inline;
   }
+  
   .xs\:block {
     display: block;
   }
+  
   .xs\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+  
   .xs\:w-auto {
     width: auto;
   }
 }
 
+/* Mobile Optimizations (max-width: 640px) */
+@media (max-width: 640px) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Tablet Optimizations (max-width: 768px) */
+@media (max-width: 768px) {
+  a, button {
+    -webkit-tap-highlight-color: rgba(229, 9, 20, 0.2);
+  }
+}
+
+/* ===================================
+   PERFORMANCE OPTIMIZATIONS
+   =================================== */
+
+/* GPU-accelerated transforms for better mobile performance */
+.hover\:scale-105:hover,
+.hover\:scale-110:hover {
+  will-change: transform;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===================================
+   PRINT STYLES (Optional)
+   =================================== */
+@media print {
+  nav,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+    color: black;
+  }
+}
