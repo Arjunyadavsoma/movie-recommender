@@ -83,13 +83,7 @@ export default function App({ Component, pageProps }) {
                 </Link>
               )}
               
-              <Link href="/about">
-                <span className={`cursor-pointer hover:text-netflix transition-colors duration-200 ${
-                  router.pathname === '/about' ? 'text-netflix font-semibold' : 'text-gray-300'
-                }`}>
-                  ℹ️ About
-                </span>
-              </Link>
+              
             </div>
             
             {/* User Section */}
@@ -164,16 +158,8 @@ export default function App({ Component, pageProps }) {
                 </Link>
               )}
               
-              <Link href="/about">
-                <div 
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-2 px-4 rounded cursor-pointer ${
-                    router.pathname === '/about' ? 'bg-netflix text-white' : 'text-gray-300 hover:bg-gray-800'
-                  }`}
-                >
-                  ℹ️ About
-                </div>
-              </Link>
+              
+            
               
               {user && (
                 <>
