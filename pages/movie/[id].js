@@ -170,13 +170,15 @@ export default function MovieDetail({ user }) {
                 <div className="flex flex-col sm:flex-row gap-5 sm:gap-6 md:gap-8 items-center sm:items-end">
                   
                   {/* Poster - Slightly larger on mobile, centered */}
-                  <div className="flex-shrink-0">
-                    <img 
-                      src={getImageUrl(movie.poster_path, 'w342')}
-                      alt={movie.title}
-                      className="w-36 h-54 sm:w-40 sm:h-60 md:w-52 md:h-78 lg:w-64 lg:h-96 rounded-lg shadow-2xl border-2 sm:border-3 border-white/30 object-cover"
-                    />
-                  </div>
+                  {/* Poster - Slightly larger on mobile, centered, with top padding */}
+<div className="flex-shrink-0 pt-8 sm:pt-0">
+  <img 
+    src={getImageUrl(movie.poster_path, 'w342')}
+    alt={movie.title}
+    className="w-36 h-54 sm:w-40 sm:h-60 md:w-52 md:h-78 lg:w-64 lg:h-96 rounded-lg shadow-2xl border-2 sm:border-3 border-white/30 object-cover"
+  />
+</div>
+
                   
                   {/* Info - Better spacing */}
                   <div className="flex-1 text-center sm:text-left min-w-0 space-y-3 sm:space-y-4">
