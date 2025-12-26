@@ -141,17 +141,17 @@ export default function MovieDetail({ user }) {
       </Head>
 
       <div className="min-h-screen">
-        {/* MOBILE-OPTIMIZED Hero Section - NO OVERLAP */}
+        {/* MOBILE-OPTIMIZED Hero Section - PERFECT SPACING */}
         <div className="relative">
-          {/* Backdrop Image - Taller height, stronger gradient */}
+          {/* Backdrop Image - Extra height on mobile prevents overlap */}
           <div 
-            className="h-[55vh] sm:h-[60vh] md:h-[70vh] lg:h-[75vh] bg-cover bg-center relative"
+            className="h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[75vh] bg-cover bg-center relative"
             style={{ backgroundImage: `url(${getBackdropUrl(movie.backdrop_path)})` }}
           >
             {/* Stronger Gradient Overlay - Prevents header blending */}
-            <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-dark-bg/80 to-dark-bg/30 sm:to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-dark-bg/85 to-dark-bg/40 sm:to-transparent" />
             
-            {/* Back Button - Clearly visible */}
+            {/* Back Button - Maximum visibility */}
             <button
               onClick={() => router.back()}
               className="absolute top-4 left-4 sm:top-6 sm:left-6 px-3 py-2 sm:px-4 sm:py-2.5 bg-black/80 hover:bg-black/95 backdrop-blur-md text-white rounded-lg transition-all duration-200 flex items-center gap-2 z-20 group shadow-xl"
@@ -162,25 +162,23 @@ export default function MovieDetail({ user }) {
               <span className="text-sm sm:text-base font-medium">Back</span>
             </button>
 
-            {/* Content - More padding at bottom for mobile */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8 pb-8 sm:pb-10">
+            {/* Content - Optimized padding for all devices */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8 pb-10 sm:pb-12">
               <div className="max-w-7xl mx-auto">
                 
-                {/* Layout: Vertical on mobile, Horizontal on desktop */}
-                <div className="flex flex-col sm:flex-row gap-5 sm:gap-6 md:gap-8 items-center sm:items-end">
+                {/* Layout: Perfect spacing for mobile & desktop */}
+                <div className="flex flex-col sm:flex-row gap-6 sm:gap-6 md:gap-8 items-center sm:items-end">
                   
-                  {/* Poster - Slightly larger on mobile, centered */}
-                  {/* Poster - Slightly larger on mobile, centered, with top padding */}
-<div className="flex-shrink-0 pt-8 sm:pt-0">
-  <img 
-    src={getImageUrl(movie.poster_path, 'w342')}
-    alt={movie.title}
-    className="w-36 h-54 sm:w-40 sm:h-60 md:w-52 md:h-78 lg:w-64 lg:h-96 rounded-lg shadow-2xl border-2 sm:border-3 border-white/30 object-cover"
-  />
-</div>
-
+                  {/* Poster - Margin-top prevents header overlap on mobile */}
+                  <div className="flex-shrink-0 mt-4 sm:mt-0">
+                    <img 
+                      src={getImageUrl(movie.poster_path, 'w342')}
+                      alt={movie.title}
+                      className="w-36 h-54 sm:w-40 sm:h-60 md:w-52 md:h-78 lg:w-64 lg:h-96 rounded-lg shadow-2xl border-2 sm:border-3 border-white/30 object-cover"
+                    />
+                  </div>
                   
-                  {/* Info - Better spacing */}
+                  {/* Info - Responsive spacing */}
                   <div className="flex-1 text-center sm:text-left min-w-0 space-y-3 sm:space-y-4">
                     
                     {/* Title - Responsive sizing */}
@@ -208,7 +206,7 @@ export default function MovieDetail({ user }) {
                       </div>
                     </div>
 
-                    {/* Action Buttons - Better mobile layout */}
+                    {/* Action Buttons - Perfect mobile layout */}
                     <div className="flex flex-col xs:flex-row gap-3 pt-2">
                       
                       {/* Trailer Button */}
