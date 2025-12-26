@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { searchMovie, getImageUrl, getTrendingMovies } from '../lib/tmdb';
 import { useRouter } from 'next/router';
+import FilterBar from './FilterBar';
 
 export default function MovieRecommender({ user }) {
   const router = useRouter();
@@ -9,17 +10,62 @@ export default function MovieRecommender({ user }) {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [trendingMovies, setTrendingMovies] = useState([]);
+  const [filteredMovies, setFilteredMovies] = useState([]);
+  const [filters, setFilters] = useState({ genre: 'All', minRating: 0, sortBy: 'popularity' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // Load trending movies on mount
   useEffect(() => {
     loadTrendingMovies();
   }, []);
   
   const loadTrendingMovies = async () => {
+    setLoading(true);
     const trending = await getTrendingMovies('day');
-    setTrendingMovies(trending.slice(0, 12));
+    setTrendingMovies(trending);
+    setFilteredMovies(trending);
+    setLoading(false);
+  };
+  
+  // Apply filters when they change
+  useEffect(() => {
+    applyFilters();
+  }, [filters, trendingMovies]);
+  
+  const applyFilters = () => {
+    let filtered = [...trendingMovies];
+    
+    // Genre filter
+    if (filters.genre !== 'All') {
+      const genreMap = {
+        'Action': 28, 'Adventure': 12, 'Animation': 16, 'Comedy': 35,
+        'Crime': 80, 'Documentary': 99, 'Drama': 18, 'Family': 10751,
+        'Fantasy': 14, 'Horror': 27, 'Mystery': 9648, 'Romance': 10749,
+        'Sci-Fi': 878, 'Thriller': 53, 'War': 10752
+      };
+      const genreId = genreMap[filters.genre];
+      filtered = filtered.filter(m => m.genre_ids?.includes(genreId));
+    }
+    
+    // Rating filter
+    if (filters.minRating > 0) {
+      filtered = filtered.filter(m => m.vote_average >= filters.minRating);
+    }
+    
+    // Sorting
+    if (filters.sortBy === 'rating') {
+      filtered.sort((a, b) => b.vote_average - a.vote_average);
+    } else if (filters.sortBy === 'recent') {
+      filtered.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+    } else if (filters.sortBy === 'title') {
+      filtered.sort((a, b) => a.title.localeCompare(b.title));
+    }
+    
+    setFilteredMovies(filtered);
+  };
+  
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
   };
   
   useEffect(() => {
@@ -169,19 +215,36 @@ export default function MovieRecommender({ user }) {
         </div>
       )}
       
+      {/* Filter Bar - Only show when viewing trending */}
+      {!selectedMovie && (
+        <FilterBar onFilterChange={handleFilterChange} />
+      )}
+      
       {/* Trending Section (show when no search) */}
-      {!selectedMovie && !loading && trendingMovies.length > 0 && (
+      {!selectedMovie && !loading && (
         <div className="mb-12">
-          <h3 className="text-2xl font-bold mb-6 text-white">🔥 Trending Today</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-            {trendingMovies.map((movie, idx) => (
-              <MovieCard 
-                key={idx} 
-                movie={movie}
-                onClick={(m) => router.push(`/movie/${m.id}`)}
-              />
-            ))}
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-2xl font-bold text-white">
+              🔥 {filters.genre !== 'All' ? `${filters.genre} Movies` : 'Trending Today'}
+            </h3>
+            <span className="text-gray-400">{filteredMovies.length} movies</span>
           </div>
+          
+          {filteredMovies.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-400 text-lg">No movies match your filters. Try adjusting them!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+              {filteredMovies.slice(0, 18).map((movie, idx) => (
+                <MovieCard 
+                  key={idx} 
+                  movie={movie}
+                  onClick={(m) => router.push(`/movie/${m.id}`)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
       
@@ -205,13 +268,6 @@ export default function MovieRecommender({ user }) {
               />
             ))}
           </div>
-        </div>
-      )}
-      
-      {!loading && !selectedMovie && trendingMovies.length === 0 && (
-        <div className="text-center py-20">
-          <div className="text-6xl mb-4">🎬</div>
-          <p className="text-gray-400 text-xl">Search for a movie to get started</p>
         </div>
       )}
     </div>
