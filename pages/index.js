@@ -11,7 +11,7 @@ export default function Home({ user }) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       
-      <main style={{ minHeight: '100vh', background: '#f5f5f5' }}>
+      <main className="min-h-screen bg-dark-bg">
         <MovieRecommender user={user} />
       </main>
     </>
