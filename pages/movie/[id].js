@@ -1,8 +1,10 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
-import { getMovieDetails, getImageUrl, getBackdropUrl } from '../lib/tmdb';
-import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../lib/watchlist';
+import { getMovieDetails, getImageUrl, getBackdropUrl } from '../../lib/tmdb';
+import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../../lib/watchlist';
 import Head from 'next/head';
+
+
 
 export default function MovieDetail({ user }) {
   const router = useRouter();
