@@ -74,7 +74,7 @@ export default function Footer() {
               </a>
               
               <a 
-                href="https://linkedin.com/in/yourprofile" 
+                href="https://linkedin.com/in/arjun-yadav-b21133284" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm"
