@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { searchMovie, getImageUrl, getTrendingMovies } from '../lib/tmdb';
+import { searchMovie, getImageUrl, getTrendingMovies, getBackdropUrl } from '../lib/tmdb';
 import { useRouter } from 'next/router';
 import FilterBar from './FilterBar';
 import { isInWatchlist, addToWatchlist, removeFromWatchlist } from '../lib/watchlist';
@@ -9,6 +9,7 @@ export default function MovieRecommender({ user }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [selectedMovieDetails, setSelectedMovieDetails] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [trendingMovies, setTrendingMovies] = useState([]);
   const [filteredMovies, setFilteredMovies] = useState([]);
@@ -28,7 +29,6 @@ export default function MovieRecommender({ user }) {
     setLoading(false);
   };
   
-  // Apply filters when they change
   useEffect(() => {
     applyFilters();
   }, [filters, trendingMovies]);
@@ -36,7 +36,6 @@ export default function MovieRecommender({ user }) {
   const applyFilters = () => {
     let filtered = [...trendingMovies];
     
-    // Genre filter
     if (filters.genre !== 'All') {
       const genreMap = {
         'Action': 28, 'Adventure': 12, 'Animation': 16, 'Comedy': 35,
@@ -48,12 +47,10 @@ export default function MovieRecommender({ user }) {
       filtered = filtered.filter(m => m.genre_ids?.includes(genreId));
     }
     
-    // Rating filter
     if (filters.minRating > 0) {
       filtered = filtered.filter(m => m.vote_average >= filters.minRating);
     }
     
-    // Sorting
     if (filters.sortBy === 'rating') {
       filtered.sort((a, b) => b.vote_average - a.vote_average);
     } else if (filters.sortBy === 'recent') {
@@ -96,6 +93,16 @@ export default function MovieRecommender({ user }) {
     setSelectedMovie(movieTitle);
     
     try {
+      // Step 1: Get the searched movie details from TMDB
+      const tmdbMovie = await searchMovie(movieTitle);
+      
+      if (!tmdbMovie) {
+        throw new Error('Movie not found on TMDB');
+      }
+      
+      setSelectedMovieDetails(tmdbMovie);
+      
+      // Step 2: Get recommendations from your ML model
       const recRes = await fetch('/api/recommend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -109,6 +116,7 @@ export default function MovieRecommender({ user }) {
       
       const recData = await recRes.json();
       
+      // Step 3: Enrich recommendations with TMDB data
       const enriched = await Promise.all(
         recData.recommendations.map(async (movie) => {
           const tmdbData = await searchMovie(movie.title);
@@ -130,12 +138,12 @@ export default function MovieRecommender({ user }) {
     } catch (err) {
       console.error('Recommendation error:', err);
       setError(err.message);
+      setSelectedMovieDetails(null);
     } finally {
       setLoading(false);
     }
   };
   
-  // MovieCard Component - FIXED
   const MovieCard = ({ movie, onClick, showWatchlistButton = true }) => {
     const [inWatchlist, setInWatchlist] = useState(false);
     const [loadingWatchlist, setLoadingWatchlist] = useState(false);
@@ -184,7 +192,6 @@ export default function MovieRecommender({ user }) {
             className="w-full h-auto object-cover"
           />
           
-          {/* Watchlist Button - Top Left */}
           {showWatchlistButton && user && (
             <button
               onClick={handleWatchlistToggle}
@@ -223,7 +230,6 @@ export default function MovieRecommender({ user }) {
     );
   };
   
-  // MAIN RETURN - This is the main component's return
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Hero Search Section */}
@@ -263,12 +269,6 @@ export default function MovieRecommender({ user }) {
             </ul>
           )}
         </div>
-        
-        {selectedMovie && (
-          <div className="mt-6 text-gray-400">
-            Showing recommendations for: <span className="text-netflix font-semibold">{selectedMovie}</span>
-          </div>
-        )}
       </div>
       
       {error && (
@@ -277,12 +277,84 @@ export default function MovieRecommender({ user }) {
         </div>
       )}
       
+      {/* Selected Movie Hero Section - NEW */}
+      {selectedMovieDetails && !loading && (
+        <div className="mb-12">
+          <div 
+            className="relative rounded-2xl overflow-hidden shadow-2xl"
+            style={{
+              backgroundImage: `url(${getBackdropUrl(selectedMovieDetails.backdrop_path)})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-dark-bg/80 to-dark-bg/40" />
+            
+            <div className="relative p-8 md:p-12">
+              <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
+                {/* Poster */}
+                <img 
+                  src={getImageUrl(selectedMovieDetails.poster_path)}
+                  alt={selectedMovieDetails.title}
+                  className="w-48 md:w-64 rounded-lg shadow-2xl cursor-pointer hover:scale-105 transition-transform duration-300"
+                  onClick={() => router.push(`/movie/${selectedMovieDetails.id}`)}
+                />
+                
+                {/* Details */}
+                <div className="flex-1 text-center md:text-left">
+                  <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
+                    {selectedMovieDetails.title}
+                  </h1>
+                  
+                  <div className="flex flex-wrap justify-center md:justify-start gap-4 mb-6 text-gray-300">
+                    <span className="flex items-center space-x-1">
+                      <span className="text-yellow-400 text-2xl">⭐</span>
+                      <span className="font-bold text-xl">{selectedMovieDetails.vote_average?.toFixed(1)}</span>
+                      <span className="text-gray-500">/ 10</span>
+                    </span>
+                    <span className="text-lg">{selectedMovieDetails.release_date?.split('-')[0]}</span>
+                    <span className="px-3 py-1 bg-netflix/80 rounded-full text-sm font-semibold">
+                      You searched this
+                    </span>
+                  </div>
+                  
+                  <p className="text-gray-300 text-lg leading-relaxed mb-6 max-w-3xl">
+                    {selectedMovieDetails.overview}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                    <button
+                      onClick={() => router.push(`/movie/${selectedMovieDetails.id}`)}
+                      className="px-6 py-3 bg-netflix hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
+                    >
+                      View Full Details
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        setSelectedMovie(null);
+                        setSelectedMovieDetails(null);
+                        setRecommendations([]);
+                        setSearchQuery('');
+                      }}
+                      className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all duration-200"
+                    >
+                      Clear Search
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Filter Bar - Only show when viewing trending */}
       {!selectedMovie && (
         <FilterBar onFilterChange={handleFilterChange} />
       )}
       
-      {/* Trending Section (show when no search) */}
+      {/* Trending Section */}
       {!selectedMovie && !loading && (
         <div className="mb-12">
           <div className="flex justify-between items-center mb-6">
@@ -319,9 +391,12 @@ export default function MovieRecommender({ user }) {
         </div>
       )}
       
-      {!loading && recommendations.length > 0 && (
+      {/* Recommendations Section - Shows AFTER selected movie */}
+      {!loading && recommendations.length > 0 && selectedMovieDetails && (
         <div>
-          <h3 className="text-2xl font-bold mb-6 text-white">Similar Movies</h3>
+          <h3 className="text-2xl font-bold mb-6 text-white">
+            🎬 Because you searched for <span className="text-netflix">{selectedMovie}</span>
+          </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
             {recommendations.map((movie, idx) => (
               <MovieCard 
