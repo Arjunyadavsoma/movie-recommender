@@ -1,78 +1,100 @@
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
 
-// Global cache for model artifacts (persists across invocations)
-let modelCache = null;
+let modelData = null;
 
 function loadModel() {
-  if (modelCache) {
-    console.log('Using cached model');
-    return modelCache;
-  }
-  
-  try {
-    const modelPath = path.join(process.cwd(), 'public', 'models', 'recommendation_model.json');
-    const modelData = JSON.parse(fs.readFileSync(modelPath, 'utf-8'));
+  if (!modelData) {
+    console.log('📥 Loading model with metadata...');
+    const startTime = Date.now();
     
-    modelCache = modelData;
-    console.log(`Model loaded: ${modelData.titles.length} movies`);
-    return modelCache;
-  } catch (error) {
-    console.error('Error loading model:', error);
-    throw new Error('Failed to load recommendation model');
+    const modelPath = path.join(process.cwd(), 'public', 'models', 'recommendation_model.json');
+    const rawData = fs.readFileSync(modelPath, 'utf-8');
+    modelData = JSON.parse(rawData);
+    
+    const loadTime = Date.now() - startTime;
+    
+    console.log('✅ Model loaded:', {
+      movies: modelData.titles?.length || 0,
+      version: modelData.metadata?.version,
+      hasMetadata: !!modelData.metadata_movies,
+      loadTime: `${loadTime}ms`
+    });
   }
+  return modelData;
 }
 
-export default function handler(req, res) {
-  // Only allow POST requests
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-  
-  const { movieTitle, topN = 10 } = req.body;
-  
-  if (!movieTitle) {
-    return res.status(400).json({ error: 'movieTitle is required' });
-  }
-  
+
+  const startTime = Date.now();
+
   try {
-    const model = loadModel();
-    const { indices, top_indices, titles, ids } = model;
-    
-    // Find movie index (case-insensitive match)
-    const movieIndex = indices[movieTitle];
-    
-    if (movieIndex === undefined) {
-      // Try fuzzy match
-      const fuzzyMatch = titles.find(
-        t => t.toLowerCase() === movieTitle.toLowerCase()
-      );
-      
-      if (!fuzzyMatch) {
-        return res.status(404).json({ 
-          error: 'Movie not found',
-          suggestion: 'Try using the search API first'
-        });
-      }
-      
-      return handler(req, { ...res, body: { ...req.body, movieTitle: fuzzyMatch } });
+    const { movieTitle, topN = 10 } = req.body;
+
+    if (!movieTitle) {
+      return res.status(400).json({ error: 'Movie title is required' });
     }
-    
-    // Get precomputed recommendations
-    const recommendedIndices = top_indices[movieIndex].slice(0, topN);
-    
-    const recommendations = recommendedIndices.map(idx => ({
-      title: titles[idx],
-      id: ids[idx]
+
+    const model = loadModel();
+    const movieIndex = model.indices[movieTitle];
+
+    if (movieIndex === undefined) {
+      // Find similar titles for suggestions
+      const suggestions = Object.keys(model.indices)
+        .filter(title => title.toLowerCase().includes(movieTitle.toLowerCase()))
+        .slice(0, 5);
+      
+      return res.status(404).json({
+        error: 'Movie not found',
+        query: movieTitle,
+        suggestions,
+        totalMovies: model.titles.length
+      });
+    }
+
+    // Get recommendations
+    const topIndices = model.top_indices[movieIndex];
+    const topScores = model.top_scores[movieIndex];
+
+    // Build recommendations with metadata
+    const recommendations = topIndices.slice(0, topN).map((idx, i) => ({
+      title: model.titles[idx],
+      id: model.ids[idx],
+      score: topScores[i],
+      
+      // Rich metadata (NEW!)
+      year: model.metadata_movies.years[idx],
+      rating: model.metadata_movies.ratings[idx],
+      voteCount: model.metadata_movies.vote_counts[idx],
+      genres: model.metadata_movies.genres[idx],
+      primaryGenre: model.metadata_movies.primary_genres[idx],
+      runtime: model.metadata_movies.runtimes[idx],
+      language: model.metadata_movies.languages[idx],
+      popularity: model.metadata_movies.popularity[idx]
     }));
-    
-    return res.status(200).json({ 
+
+    const responseTime = Date.now() - startTime;
+
+    return res.status(200).json({
       query: movieTitle,
-      recommendations 
+      recommendations,
+      source: 'ml_model',
+      model_info: {
+        version: model.metadata?.version,
+        total_movies: model.titles.length,
+        trained_at: model.metadata?.trained_at,
+        response_time_ms: responseTime
+      }
     });
-    
+
   } catch (error) {
-    console.error('Recommendation error:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('❌ Recommendation error:', error);
+    return res.status(500).json({ 
+      error: 'Failed to generate recommendations',
+      details: error.message 
+    });
   }
 }
