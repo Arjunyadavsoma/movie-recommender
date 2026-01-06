@@ -145,7 +145,9 @@ GitHub:
 ## Author
 
 Soma Arjun Yadav
+
 B.Tech in AI and Machine Learning
+
 Full-Stack and AI Developer
 
 
